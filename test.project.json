@@ -1,0 +1,16 @@
+{
+    "name": "vide-flash-list-test",
+    "tree": {
+        "$className": "DataModel",
+
+        "ReplicatedStorage": {
+            "Packages": {
+                "$path": "Packages",
+
+                "VideFlashList": {
+                    "$path": "src"
+                }
+            }
+        }
+    }
+}

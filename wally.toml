@@ -1,7 +1,10 @@
 [package]
 name = "quamatic/vide-flash-list"
+description = "A better list for Vide."
+license = "MIT"
 version = "0.1.0"
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"
 
 [dependencies]
+vide = "centau/vide@^0.3"

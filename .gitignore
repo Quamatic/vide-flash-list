@@ -4,7 +4,8 @@
 *.tsbuildinfo
 
 # Rojo
-sourcemap.json
+/sourcemap.json
 
 # Wally
-wally.lock
+/Packages
+/wally.lock
