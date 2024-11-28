@@ -1,17 +1,17 @@
 {
   "name": "@rbxts/vide-flash-list",
   "version": "1.0.0",
-  "description": "",
-  "main": "out/init.lua",
+  "description": "A better list for Vide.",
+  "main": "src/init.lua",
   "scripts": {
     "build": "rbxtsc",
     "watch": "rbxtsc -w",
     "prepublishOnly": "pnpm run build"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "types": "out/index.d.ts",
+  "keywords": ["vide", "list", "flash-list", "flashlist"],
+  "author": "quamatic",
+  "license": "MIT",
+  "types": "src/index.d.ts",
   "files": [
     "out",
     "!**/*.tsbuildinfo"
@@ -31,5 +31,8 @@
     "prettier": "^3.3.3",
     "roblox-ts": "^3.0.0",
     "typescript": "^5.7.2"
+  },
+  "peerDependencies": {
+    "@rbxts/vide": "*"
   }
 }

@@ -10,6 +10,10 @@
                 "VideFlashList": {
                     "$path": "src"
                 }
+            },
+
+            "Examples": {
+                "$path": "examples"
             }
         }
     }
