@@ -1,19 +1,15 @@
-local store = require(script.Parent.store)
+local _store = require(script.Parent.store)
+type VirtualStore = _store.VirtualStore
 
 local VirtualStoreAction = require(script.Parent.VirtualStoreAction)
-local VirtualStoreSubscription = require(script.Parent.VirtualStoreSubscription)
+
+local types = require(script.Parent.types)
+type ScrollAnimator = types.ScrollAnimator
+type ScrollToIndexParams = types.ScrollToIndexParams
 
 local SCROLL_END_DETECTION_DELAY = 150 / 1000 -- 150ms
 
-export type ScrollAnimator = (update: (progress: number) -> ()) -> () -> ()
-
-export type ScrollToIndexParams = {
-	align: "nearest" | "start" | "center" | "end"?,
-	offset: number?,
-	animator: ScrollAnimator?,
-}
-
-type Scroller = {
+export type Scroller = {
 	-- Lifecycle
 	setScrollElement: (element: ScrollingFrame) -> (),
 	updateScrollPosition: (position: Vector2) -> (),
@@ -26,7 +22,7 @@ type Scroller = {
 	fixScrollJump: () -> (),
 }
 
-local function createScroller(store: store.VirtualStore, horizontal: boolean): Scroller
+local function createScroller(store: VirtualStore, horizontal: boolean): Scroller
 	local scrollElement: ScrollingFrame? = nil
 	local cancelScroll: () -> () = nil
 	local scrollEndDetectionThread: thread? = nil
