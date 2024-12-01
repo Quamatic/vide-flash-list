@@ -39,14 +39,12 @@ end
 local function Contact(props: {
 	index: number,
 	maxIndex: number,
-	item: {
+	item: vide.Source<{
 		userId: number,
 		firstName: string,
 		lastName: string,
-	},
+	}>,
 })
-	local thumbnailUrl = `rbxthumb://type=AvatarHeadShot&id={props.item.userId}&w=48&h=48`
-
 	return create "Frame" {
 		Size = UDim2.new(1, 0, 0, CONTACT_CARD_HEIGHT),
 
@@ -67,7 +65,9 @@ local function Contact(props: {
 		create "ImageLabel" {
 			Size = UDim2.fromOffset(96 - 24, 0),
 			BackgroundColor3 = Color3.fromHSV(props.index / props.maxIndex, 0.5, 0.5),
-			Image = thumbnailUrl,
+			Image = function()
+				return `rbxthumb://type=AvatarHeadShot&id={props.item().userId}&w=48&h=48`
+			end,
 
 			create "UICorner" {
 				CornerRadius = UDim.new(1, 0),
@@ -97,7 +97,9 @@ local function Contact(props: {
 
 			create "TextLabel" {
 				AutomaticSize = Enum.AutomaticSize.XY,
-				Text = `{props.item.firstName} {props.item.lastName}`,
+				Text = function()
+					return `{props.item().firstName} {props.item().lastName}`
+				end,
 				TextSize = 24,
 				BackgroundTransparency = 1,
 			},
@@ -170,18 +172,14 @@ return {
 					horizontal = false,
 					overscan = 4,
 					itemSize = CONTACT_CARD_HEIGHT,
-					children = function(item: ContactData.Contact | string, index)
-						if typeof(item) == "string" then
-							return SectionHeader { item = item }
+					children = function(item: vide.Source<ContactData.Contact | string>, index)
+						if typeof(item()) == "string" then
+							return SectionHeader { item = item() :: string }
 						end
 
 						return Contact {
 							index = index,
-							item = {
-								firstName = item.firstName,
-								lastName = item.lastName,
-								userId = item.userId,
-							},
+							item = item :: any,
 							maxIndex = #CONTACTS,
 						}
 					end,
@@ -208,14 +206,14 @@ return {
 							handles.scrollToIndex(RNG:NextInteger(1, #CONTACTS), {
 								animator = function(update: (number) -> ())
 									local t = 0
-									local duration = 2
+									local duration = 0.8
 
 									local connection = game:GetService("RunService").PreRender
 										:Connect(function(delta: number)
-											t += delta * duration
+											t += delta / duration
 											update(
 												game:GetService("TweenService")
-													:GetValue(t, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out)
+													:GetValue(t, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut)
 											)
 										end)
 
@@ -224,36 +222,6 @@ return {
 									end
 								end,
 							})
-						end
-					end,
-				},
-
-				Button {
-					text = "Top",
-					onClick = function()
-						local handles = handles()
-						if handles ~= nil then
-							handles.scrollToTop()
-						end
-					end,
-				},
-
-				Button {
-					text = "Center",
-					onClick = function()
-						local handles = handles()
-						if handles ~= nil then
-							handles.scrollToCenter()
-						end
-					end,
-				},
-
-				Button {
-					text = "End",
-					onClick = function()
-						local handles = handles()
-						if handles ~= nil then
-							handles.scrollToEnd()
 						end
 					end,
 				},

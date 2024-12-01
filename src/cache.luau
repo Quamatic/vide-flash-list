@@ -86,6 +86,7 @@ local function findIndex(cache: Cache, offset: number, low: number?, high: numbe
 end
 
 local function computeRange(cache: Cache, scrollOffset: number, viewportSize: number, prevStartIndex: number)
+	-- Clamp because prevStartIndex may exceed the limit when children decreased a lot after scrolling
 	prevStartIndex = math.min(prevStartIndex, cache.length)
 
 	if computeOffset(cache, prevStartIndex) <= scrollOffset then
@@ -96,8 +97,8 @@ local function computeRange(cache: Cache, scrollOffset: number, viewportSize: nu
 	else
 		-- search backward
 		-- start <= end, start <= prevStartIndex
-		local start = findIndex(cache, scrollOffset, nil, prevStartIndex)
-		return start, findIndex(cache, scrollOffset + viewportSize, start)
+		local startIndex = findIndex(cache, scrollOffset, nil, prevStartIndex)
+		return startIndex, findIndex(cache, scrollOffset + viewportSize, startIndex)
 	end
 end
 
@@ -170,9 +171,7 @@ local function updateLength(cache: Cache, length: number, isShift: boolean?)
 
 	if difference > 0 then
 		-- Added
-		for i = 1, difference do
-			cache.offsets[i] = UNCACHED
-
+		for _ = 1, difference do
 			if isShift then
 				table.insert(cache.sizes, 1, UNCACHED)
 			else

@@ -130,20 +130,20 @@ local function createVirtualStore(
 			end
 
 			local startIndex, endIndex = getRange(math.max(0, getVisibleOffset()))
-			if frozenRange then
+			if frozenRange ~= nil then
 				startIndex = math.min(startIndex, frozenRange[1])
 				endIndex = math.max(endIndex, frozenRange[2])
 			end
 
 			if scrollDirection ~= ScrollDirection.Down then
-				startIndex -= math.max(1, overscan)
+				startIndex -= math.max(0, overscan)
 			end
 
 			if scrollDirection ~= ScrollDirection.Up then
-				endIndex += math.max(1, overscan)
+				endIndex += math.max(0, overscan)
 			end
 
-			previousStartIndex = math.max(1, startIndex)
+			previousStartIndex = math.max(startIndex, 1)
 			previousEndIndex = math.min(endIndex, cache.length)
 
 			return previousStartIndex, previousEndIndex
@@ -249,6 +249,7 @@ local function createVirtualStore(
 					mutated += VirtualStoreSubscription.VirtualStateUpdated
 				end
 			elseif action.type == VirtualStoreAction.ScrollEnd then
+				-- The user stopped scrolling.
 				mutated = VirtualStoreSubscription.ScrollEnd
 
 				if scrollDirection ~= ScrollDirection.Idle then

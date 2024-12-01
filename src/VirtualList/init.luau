@@ -7,6 +7,10 @@ local createVirtualStore = store.createVirtualStore
 local scroller = require(script.Parent.scroller)
 local createScroller = scroller.createScroller
 
+local types = require(script.Parent.types)
+type ScrollAnimator = types.ScrollAnimator
+type ScrollToIndexParams = types.ScrollToIndexParams
+
 local VirtualStoreAction = require(script.Parent.VirtualStoreAction)
 local VirtualStoreSubscription = require(script.Parent.VirtualStoreSubscription)
 
@@ -29,9 +33,9 @@ export type VirtualListHandle = {
 	findEndIndex: () -> number,
 	getItemOffset: (index: number) -> number,
 	getItemSize: (index: number) -> number,
-	scrollTo: (offset: number, animator: scroller.ScrollAnimator?) -> (),
-	scrollBy: (offset: number, animator: scroller.ScrollAnimator?) -> (),
-	scrollToIndex: (index: number, params: scroller.ScrollToIndexParams?) -> (),
+	scrollTo: (offset: number, animator: ScrollAnimator?) -> (),
+	scrollBy: (offset: number, animator: ScrollAnimator?) -> (),
+	scrollToIndex: (index: number, params: ScrollToIndexParams?) -> (),
 }
 
 export type Props<T> = {
@@ -41,7 +45,7 @@ export type Props<T> = {
 	itemSize: number,
 	startMargin: number?,
 	shift: boolean?,
-	children: (data: T, index: number) -> Instance,
+	children: (data: () -> T, index: number) -> Instance,
 	onScroll: (offset: number) -> ()?,
 	onScrollEnd: () -> ()?,
 	ref: (handle: VirtualListHandle) -> ()?,
@@ -78,25 +82,33 @@ local function VirtualList<T>(props: Props<T>)
 		end
 	end)
 
-	-- State
-	local range = derive(function()
-		rerender()
-
-		local nextStartIndex, nextEndIndex = store.getRange()
-		return { nextStartIndex, nextEndIndex }
-	end)
+	local range = source({ store.getRange() })
 
 	local totalSize = derive(function()
 		rerender()
 		return store.getTotalSize()
 	end)
 
+	effect(function(previousRange)
+		rerender()
+
+		local currentStartIndex, currentEndIndex = store.getRange()
+		if previousRange[1] ~= currentStartIndex or previousRange[2] ~= currentEndIndex then
+			local newRange = { currentStartIndex, currentEndIndex }
+			range(newRange)
+
+			return newRange
+		end
+
+		return previousRange
+	end, { store.getRange() })
+
 	-- Cleanup
 	cleanup(function()
-		scroller.destroy()
 		unsubscribeStore()
 		unsubscribeOnScroll()
 		unsubscribeOnScrollEnd()
+		scroller.destroy()
 	end)
 
 	-- Check for data source updates
@@ -186,7 +198,7 @@ local function VirtualList<T>(props: Props<T>)
 								size = if horizontal then size.X else size.Y,
 							})
 						end,
-						children = props.children(data(), index),
+						children = props.children(data, index),
 					}
 				end,
 			},
