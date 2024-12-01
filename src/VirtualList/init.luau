@@ -10,8 +10,8 @@ local createScroller = scroller.createScroller
 local VirtualStoreAction = require(script.Parent.VirtualStoreAction)
 local VirtualStoreSubscription = require(script.Parent.VirtualStoreSubscription)
 
-local RangedFor = require(script.Parent.RangedFor)
-local ListItem = require(script.Parent.ListItem)
+local RangedFor = require(script.RangedFor)
+local ListItem = require(script.ListItem)
 
 local create = vide.create
 local source = vide.source
@@ -21,17 +21,17 @@ local action = vide.action
 local changed = vide.changed
 local cleanup = vide.cleanup
 
-export type VirtualizerHandle = {
-	scrollOffset: number,
-	scrollSize: number,
-	viewportSize: number,
+export type VirtualListHandle = {
+	scrollOffset: () -> number,
+	--scrollSize: () -> number,
+	viewportSize: () -> number,
 	findStartIndex: () -> number,
 	findEndIndex: () -> number,
 	getItemOffset: (index: number) -> number,
 	getItemSize: (index: number) -> number,
-	scrollToIndex: (index: number) -> (),
-	scrollTo: (offset: number) -> (),
-	scrollBy: (offset: number) -> (),
+	scrollTo: (offset: number, animator: scroller.ScrollAnimator?) -> (),
+	scrollBy: (offset: number, animator: scroller.ScrollAnimator?) -> (),
+	scrollToIndex: (index: number, params: scroller.ScrollToIndexParams?) -> (),
 }
 
 export type Props<T> = {
@@ -39,10 +39,12 @@ export type Props<T> = {
 	horizontal: boolean?,
 	overscan: number,
 	itemSize: number,
+	startMargin: number?,
+	shift: boolean?,
 	children: (data: T, index: number) -> Instance,
 	onScroll: (offset: number) -> ()?,
 	onScrollEnd: () -> ()?,
-	ref: (handle: VirtualizerHandle) -> ()?,
+	ref: (handle: VirtualListHandle) -> ()?,
 }
 
 local function VirtualList<T>(props: Props<T>)
@@ -50,18 +52,33 @@ local function VirtualList<T>(props: Props<T>)
 	local itemSize = props.itemSize
 	local overscan = props.overscan
 	local horizontal = props.horizontal or false
+	local shift = props.shift or false
+	local onScroll = props.onScroll
+	local onScrollEnd = props.onScrollEnd
 
 	-- Store
 	local store = createVirtualStore(#data(), itemSize, overscan, nil)
 	local scroller = createScroller(store, horizontal)
-
 	local rerender = source(store.getStateVersion())
 
-	-- Subscribe to virtual state updates
+	-- Subscriptions
 	local unsubscribeStore = store.subscribe(VirtualStoreSubscription.VirtualStateUpdated, function()
 		rerender(store.getStateVersion())
 	end)
 
+	local unsubscribeOnScroll = store.subscribe(VirtualStoreSubscription.Scroll, function()
+		if onScroll then
+			onScroll(store.getScrollOffset())
+		end
+	end)
+
+	local unsubscribeOnScrollEnd = store.subscribe(VirtualStoreSubscription.ScrollEnd, function()
+		if onScrollEnd then
+			onScrollEnd()
+		end
+	end)
+
+	-- State
 	local range = derive(function()
 		rerender()
 
@@ -74,21 +91,41 @@ local function VirtualList<T>(props: Props<T>)
 		return store.getTotalSize()
 	end)
 
+	-- Cleanup
+	cleanup(function()
+		scroller.destroy()
+		unsubscribeStore()
+		unsubscribeOnScroll()
+		unsubscribeOnScrollEnd()
+	end)
+
+	-- Check for data source updates
 	effect(function()
 		local count = #data()
 		if count ~= store.getItemsLength() then
 			store.dispatch({
 				type = VirtualStoreAction.ItemsChanged,
 				length = count,
-				shift = false,
+				shift = shift,
 			})
 		end
 	end)
 
-	cleanup(function()
-		unsubscribeStore()
-	end)
+	-- Check for "jumps" in scrolling.
+	effect(function(previousJumpCount)
+		rerender()
 
+		local newJumpCount = store.getJumpCount()
+		if newJumpCount ~= previousJumpCount then
+			scroller.fixScrollJump()
+			return newJumpCount
+		end
+
+		return previousJumpCount
+	end, store.getJumpCount())
+
+	-- Render scroll view
+	-- TODO: Custom styles
 	return create "ScrollingFrame" {
 		Size = UDim2.fromScale(1, 1),
 		CanvasSize = UDim2.fromScale(1, 1),
@@ -105,7 +142,7 @@ local function VirtualList<T>(props: Props<T>)
 		BorderSizePixel = 0,
 		BackgroundTransparency = 1,
 
-		changed("CanvasPosition", scroller.update),
+		changed("CanvasPosition", scroller.updateScrollPosition),
 
 		changed("AbsoluteSize", function(size)
 			store.dispatch({
@@ -156,9 +193,21 @@ local function VirtualList<T>(props: Props<T>)
 		},
 
 		-- Ref
-		action(function()
-			if not props.ref then
-				return
+		action(function(ref)
+			scroller.setScrollElement(ref :: ScrollingFrame)
+
+			if props.ref then
+				props.ref({
+					scrollOffset = store.getScrollOffset,
+					viewportSize = store.getViewportSize,
+					findStartIndex = store.findStartIndex,
+					findEndIndex = store.findEndIndex,
+					getItemOffset = store.getItemOffset,
+					getItemSize = store.getItemSize,
+					scrollTo = scroller.scrollTo,
+					scrollBy = scroller.scrollBy,
+					scrollToIndex = scroller.scrollToIndex,
+				})
 			end
 		end),
 	}

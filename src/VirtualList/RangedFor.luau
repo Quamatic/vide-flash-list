@@ -1,4 +1,4 @@
-local vide = require(script.Parent.Parent.vide)
+local vide = require(script.Parent.Parent.Parent.vide)
 
 local source = vide.source
 local root = vide.root

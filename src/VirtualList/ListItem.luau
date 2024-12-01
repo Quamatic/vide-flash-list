@@ -1,4 +1,4 @@
-local vide = require(script.Parent.Parent.vide)
+local vide = require(script.Parent.Parent.Parent.vide)
 
 local create = vide.create
 local changed = vide.changed

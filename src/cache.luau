@@ -89,18 +89,48 @@ local function computeRange(cache: Cache, scrollOffset: number, viewportSize: nu
 	prevStartIndex = math.min(prevStartIndex, cache.length)
 
 	if computeOffset(cache, prevStartIndex) <= scrollOffset then
+		-- search forward
+		-- start <= end, prevStartIndex <= start
 		local endIndex = findIndex(cache, scrollOffset + viewportSize, prevStartIndex)
-
 		return findIndex(cache, scrollOffset, prevStartIndex, endIndex), endIndex
 	else
+		-- search backward
+		-- start <= end, start <= prevStartIndex
 		local start = findIndex(cache, scrollOffset, nil, prevStartIndex)
-
 		return start, findIndex(cache, scrollOffset + viewportSize, start)
 	end
 end
 
 local function estimateDefaultItemSize(cache: Cache, startIndex: number)
-	print(cache, startIndex)
+	local measuredCountBeforeStart = 0
+	local measuredSizes: { number } = {}
+
+	for index, size in cache.sizes do
+		if size ~= UNCACHED then
+			table.insert(measuredSizes, size)
+
+			if index < startIndex then
+				measuredCountBeforeStart += 1
+			end
+		end
+	end
+
+	cache.computedOffsetIndex = -1
+
+	table.sort(measuredSizes, function(a, b)
+		return a < b
+	end)
+
+	local length = #measuredSizes
+	local mid = bit32.bor(length / 2, 0)
+	local median = if not bit32.btest(length, 1)
+		then (measuredSizes[mid - 1] + measuredSizes[mid]) / 2
+		else measuredSizes[mid]
+
+	local prevDefaultItemSize = cache.defaultItemSize
+	cache.defaultItemSize = median
+
+	return (median - prevDefaultItemSize) * math.max(startIndex - measuredCountBeforeStart, 0)
 end
 
 local function create(length: number, itemSize: number, snapshot: InternalCacheSnapshot?): Cache
@@ -139,17 +169,24 @@ local function updateLength(cache: Cache, length: number, isShift: boolean?)
 	cache.length = length
 
 	if difference > 0 then
+		-- Added
 		for i = 1, difference do
 			cache.offsets[i] = UNCACHED
-			table.insert(cache.sizes, 1, UNCACHED)
+
+			if isShift then
+				table.insert(cache.sizes, 1, UNCACHED)
+			else
+				table.insert(cache.sizes, UNCACHED)
+			end
 		end
 
 		return cache.defaultItemSize * difference
 	else
+		-- Removed
 		splice(cache.offsets, difference)
 
 		local removed: { number } = if isShift
-			then splice(cache.sizes, 0, -difference)
+			then splice(cache.sizes, 1, -difference)
 			else splice(cache.sizes, difference)
 
 		local accumulator = 0

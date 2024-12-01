@@ -146,7 +146,7 @@ return {
 	vide = vide,
 	story = function()
 		local data = source(CONTACTS)
-		local handles = source(nil :: VideFlashList.ScrollHandles<Contact>?)
+		local handles = source(nil :: VideFlashList.VirtualListHandle?)
 
 		return create "Frame" {
 			AnchorPoint = Vector2.new(0.5, 0.5),
@@ -185,6 +185,7 @@ return {
 							maxIndex = #CONTACTS,
 						}
 					end,
+					ref = handles,
 				},
 			},
 
@@ -204,7 +205,25 @@ return {
 					onClick = function()
 						local handles = handles()
 						if handles ~= nil then
-							handles.scrollToIndex({ index = RNG:NextInteger(1, #CONTACTS) })
+							handles.scrollToIndex(RNG:NextInteger(1, #CONTACTS), {
+								animator = function(update: (number) -> ())
+									local t = 0
+									local duration = 2
+
+									local connection = game:GetService("RunService").PreRender
+										:Connect(function(delta: number)
+											t += delta * duration
+											update(
+												game:GetService("TweenService")
+													:GetValue(t, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out)
+											)
+										end)
+
+									return function()
+										connection:Disconnect()
+									end
+								end,
+							})
 						end
 					end,
 				},
@@ -259,8 +278,8 @@ return {
 						table.insert(cloned, {
 							id = HttpService:GenerateGUID(),
 							userId = 1,
-							firstName = "Hello",
-							lastName = "There",
+							firstName = "John",
+							lastName = "Doe",
 						})
 
 						data(cloned)
