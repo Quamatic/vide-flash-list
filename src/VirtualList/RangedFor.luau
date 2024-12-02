@@ -4,6 +4,7 @@ local source = vide.source
 local root = vide.root
 local derive = vide.derive
 local cleanup = vide.cleanup
+local untrack = vide.untrack
 
 type RenderedNode<T> = {
 	data: vide.Source<T>,
@@ -20,6 +21,7 @@ export type Props<T> = {
 
 local function RangedFor<T>(props: Props<T>)
 	local cache: { [number]: RenderedNode<T> } = {}
+	local render = props.render
 
 	cleanup(function()
 		for _, node in cache do
@@ -42,7 +44,7 @@ local function RangedFor<T>(props: Props<T>)
 				local src = source(data)
 
 				local destroy, element = root(function()
-					return props.render(src, i)
+					return render(src, i)
 				end)
 
 				cache[i] = {

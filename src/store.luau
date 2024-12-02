@@ -263,11 +263,10 @@ local function createVirtualStore(
 			elseif action.type == VirtualStoreAction.ItemResized then
 				-- An item was resized
 				local index = action.index
-				local newSize = action.size
-				local currentSize = getItemSize(index)
+				local size = action.size
 
 				-- Check if we actually updated first
-				if currentSize ~= newSize then
+				if cache.sizes[index] ~= size then
 					-- Calculate jump by resize to minimize junks in appearance
 					if
 						scrollMode == ScrollMode.Shift
@@ -276,17 +275,18 @@ local function createVirtualStore(
 								then index < frozenRange[1]
 								else getItemOffset(index) + (if scrollDirection == ScrollDirection.Idle
 										and scrollMode == ScrollMode.Shift
-									then currentSize
+									then getItemSize(index)
 									else 0) < getRelativeScrollOffset()
 						)
 					then
-						applyJump(newSize - currentSize)
+						applyJump(size - getItemSize(index))
 					end
 
-					local isInitialMeasurement = setItemSize(cache, index, newSize)
+					local prevSize = getItemSize(index)
+					local isInitialMeasurement = setItemSize(cache, index, size)
 
 					if shouldAutoEstimateItemSize then
-						totalMeasuredSize += if isInitialMeasurement then newSize else newSize - currentSize
+						totalMeasuredSize += if isInitialMeasurement then size else size - prevSize
 
 						if viewportSize ~= 0 and totalMeasuredSize > viewportSize then
 							applyJump(estimateDefaultItemSize(cache, findIndex(cache, getVisibleOffset())))
@@ -316,10 +316,10 @@ local function createVirtualStore(
 				mutated = VirtualStoreSubscription.VirtualStateUpdated
 			elseif action.type == VirtualStoreAction.ManualScrollInitiated then
 				scrollMode = ScrollMode.Manual
-			elseif action.type == VirtualStoreAction.ManualScrollAnimationInitiated then
+				--elseif action.type == VirtualStoreAction.ManualScrollAnimationInitiated then
 				-- A scroll animation is in progress, freeze the items up until the target offset.
-				frozenRange = { getRange(action.offset) }
-				mutated = VirtualStoreSubscription.VirtualStateUpdated
+				--frozenRange = { getRange(action.offset) }
+				--mutated = VirtualStoreSubscription.VirtualStateUpdated
 			end
 
 			if mutated ~= 0 then

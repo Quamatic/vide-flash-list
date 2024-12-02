@@ -2,8 +2,10 @@ local splice = require(script.Parent.splice)
 
 export type Cache = {
 	length: number,
+	-- offsets
 	sizes: { number },
 	defaultItemSize: number,
+	-- sizes
 	computedOffsetIndex: number,
 	offsets: { number },
 }
@@ -30,7 +32,8 @@ local function setItemSize(cache: Cache, index: number, size: number)
 end
 
 local function computeOffset(cache: Cache, index: number)
-	if cache.length == 0 then
+	if cache.length == 0 or index > cache.length then
+		print(#cache.offsets, cache.length, index, debug.info(3, "fnsl"))
 		return 0
 	end
 
@@ -38,7 +41,7 @@ local function computeOffset(cache: Cache, index: number)
 		return cache.offsets[index]
 	end
 
-	if cache.computedOffsetIndex < 0 then
+	if cache.computedOffsetIndex < 1 then
 		cache.offsets[1] = 0
 		cache.computedOffsetIndex = 1
 	end
@@ -102,6 +105,10 @@ local function computeRange(cache: Cache, scrollOffset: number, viewportSize: nu
 	end
 end
 
+local function sortMeasuredSizes(a: number, b: number)
+	return a < b
+end
+
 local function estimateDefaultItemSize(cache: Cache, startIndex: number)
 	local measuredCountBeforeStart = 0
 	local measuredSizes: { number } = {}
@@ -118,9 +125,7 @@ local function estimateDefaultItemSize(cache: Cache, startIndex: number)
 
 	cache.computedOffsetIndex = -1
 
-	table.sort(measuredSizes, function(a, b)
-		return a < b
-	end)
+	table.sort(measuredSizes, sortMeasuredSizes)
 
 	local length = #measuredSizes
 	local mid = bit32.bor(length / 2, 0)
@@ -164,7 +169,8 @@ local function takeSnapshot(cache: Cache): InternalCacheSnapshot
 end
 
 local function updateLength(cache: Cache, length: number, isShift: boolean?)
-	local difference = length - cache.length
+	local previous = cache.length
+	local difference = length - previous
 
 	cache.computedOffsetIndex = if isShift then -1 else math.min(length, cache.computedOffsetIndex)
 	cache.length = length

@@ -53,7 +53,7 @@ local function createScroller(store: VirtualStore, horizontal: boolean): Scrolle
 
 			-- Begin the animator lifecycle.
 			cancelScroll = animator(function(progress: number)
-				local offset = math.floor(startOffset + (targetOffset - startOffset) * progress)
+				local offset = startOffset + (targetOffset - startOffset) * progress
 				scrollElement.CanvasPosition = if horizontal then Vector2.new(offset, 0) else Vector2.new(0, offset)
 
 				if progress >= 1 then

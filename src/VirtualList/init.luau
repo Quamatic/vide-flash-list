@@ -84,24 +84,23 @@ local function VirtualList<T>(props: Props<T>)
 
 	local range = source({ store.getRange() })
 
+	effect(function(previous: { number }?)
+		rerender()
+
+		local nextRange = { store.getRange() }
+		if previous and nextRange[1] == previous[1] and nextRange[2] == previous[2] then
+			return previous
+		end
+
+		range(nextRange)
+
+		return nextRange
+	end)
+
 	local totalSize = derive(function()
 		rerender()
 		return store.getTotalSize()
 	end)
-
-	effect(function(previousRange)
-		rerender()
-
-		local currentStartIndex, currentEndIndex = store.getRange()
-		if previousRange[1] ~= currentStartIndex or previousRange[2] ~= currentEndIndex then
-			local newRange = { currentStartIndex, currentEndIndex }
-			range(newRange)
-
-			return newRange
-		end
-
-		return previousRange
-	end, { store.getRange() })
 
 	-- Cleanup
 	cleanup(function()
@@ -176,26 +175,21 @@ local function VirtualList<T>(props: Props<T>)
 				each = data,
 				range = range,
 				render = function(data: () -> T, index)
-					local offset = derive(function()
-						rerender()
-						return store.getItemOffset(index)
-					end)
-
-					local hidden = derive(function()
-						rerender()
-						return store.isUnmeasuredItem(index)
-					end)
-
 					return ListItem {
 						index = index,
-						offset = offset,
-						hidden = hidden,
+						offset = store.getItemOffset(index),
+						hidden = store.isUnmeasuredItem(index),
 						horizontal = horizontal,
 						resizer = function(size)
+							local value = if horizontal then size.X else size.Y
+							if value == 0 then
+								return
+							end -- Element hasn't performed a layout yet, prevent a dispatch for now.
+
 							store.dispatch({
 								type = VirtualStoreAction.ItemResized,
 								index = index,
-								size = if horizontal then size.X else size.Y,
+								size = value,
 							})
 						end,
 						children = props.children(data, index),
