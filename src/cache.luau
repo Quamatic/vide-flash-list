@@ -32,8 +32,7 @@ local function setItemSize(cache: Cache, index: number, size: number)
 end
 
 local function computeOffset(cache: Cache, index: number)
-	if cache.length == 0 or index > cache.length then
-		print(#cache.offsets, cache.length, index, debug.info(3, "fnsl"))
+	if cache.length == 0 then
 		return 0
 	end
 

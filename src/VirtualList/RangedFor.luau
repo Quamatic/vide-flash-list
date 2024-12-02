@@ -4,7 +4,6 @@ local source = vide.source
 local root = vide.root
 local derive = vide.derive
 local cleanup = vide.cleanup
-local untrack = vide.untrack
 
 type RenderedNode<T> = {
 	data: vide.Source<T>,
@@ -36,18 +35,18 @@ local function RangedFor<T>(props: Props<T>)
 		local endIndex = range[2]
 		local valid = {}
 
-		for i = startIndex, endIndex do
-			local value = cache[i]
-			local data = list[i]
+		for index = startIndex, endIndex do
+			local value = cache[index]
+			local data = list[index]
 
 			if value == nil then
 				local src = source(data)
 
 				local destroy, element = root(function()
-					return render(src, i)
+					return render(src, index)
 				end)
 
-				cache[i] = {
+				cache[index] = {
 					data = src,
 					destroy = destroy,
 					previous = data,
@@ -58,7 +57,7 @@ local function RangedFor<T>(props: Props<T>)
 				value.data(data)
 			end
 
-			valid[i] = true
+			valid[index] = true
 		end
 
 		for index, value in cache do

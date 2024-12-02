@@ -1,4 +1,4 @@
-local function splice<T>(array: { T }, start: number, deleteCount: number?, ...: T): { T }
+local function splice<T>(array: { T }, start: number, deleteCount: number?): { T }
 	local length = #array
 	if start > length then
 		return {}

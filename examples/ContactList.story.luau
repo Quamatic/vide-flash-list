@@ -1,4 +1,6 @@
 local HttpService = game:GetService("HttpService")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
 
 local vide = require(script.Parent.Parent.Packages.vide)
 vide.strict = false
@@ -204,18 +206,16 @@ return {
 						local handles = handles()
 						if handles ~= nil then
 							handles.scrollToIndex(RNG:NextInteger(1, #CONTACTS), {
-								animator = function(update: (number) -> ())
+								animator = function(update)
 									local t = 0
 									local duration = 0.8
 
-									local connection = game:GetService("RunService").PreRender
-										:Connect(function(delta: number)
-											t += delta / duration
-											update(
-												game:GetService("TweenService")
-													:GetValue(t, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut)
-											)
-										end)
+									local connection = RunService.PreRender:Connect(function(delta: number)
+										t += delta / duration
+										update(
+											TweenService:GetValue(t, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
+										)
+									end)
 
 									return function()
 										connection:Disconnect()
