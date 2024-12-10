@@ -8,4 +8,9 @@
 
 # Wally
 /Packages
+/DevPackages
 /wally.lock
+
+# Packages
+/src/**/node_modules
+/src/**/wally.lock

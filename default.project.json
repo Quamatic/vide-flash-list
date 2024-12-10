@@ -1,6 +1,26 @@
 {
-    "name": "vide-flash-list",
+    "name": "virtua-dev",
     "tree": {
-        "$path": "src"
+        "$className": "DataModel",
+
+        "ReplicatedStorage": {
+            "$className": "ReplicatedStorage",
+
+            "DevPackages": {
+                "$path": "DevPackages",
+
+                "Virtua": {
+                    "$path": "src/core"
+                },
+
+                "VirtuaVide": {
+                    "$path": "src/vide"
+                }
+            },
+
+            "Stories": {
+                "$path": "stories"
+            }
+        }
     }
 }

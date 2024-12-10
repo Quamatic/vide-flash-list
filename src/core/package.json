@@ -1,0 +1,13 @@
+{
+  "name": "@rbxts/virtua",
+  "version": "1.0.0",
+  "main": "src/init.luau",
+  "types": "src/index.d.ts",
+  "scripts": {
+    "publish:wally": "wally publish"
+  },
+  "author": "quamatic",
+  "repository": "quamatic/virtua",
+  "license": "MIT",
+  "description": "An easy way to create virtualized lists and grids."
+}

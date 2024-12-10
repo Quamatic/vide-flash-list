@@ -1,0 +1,19 @@
+{
+  "name": "@rbxts/virtua-react",
+  "version": "1.0.0",
+  "main": "src/init.luau",
+  "types": "src/index.d.ts",
+  "scripts": {
+    "publish:wally": "wally publish"
+  },
+  "author": "quamatic",
+  "repository": "quamatic/virtua",
+  "license": "MIT",
+  "description": "React bindings for Virtua.",
+  "dependencies": {
+    "@rbxts/virtua": "workspace:*"
+  },
+  "peerDependencies": {
+    "@rbxts/react": "*"
+  }
+}

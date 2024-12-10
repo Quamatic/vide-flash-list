@@ -1,0 +1,11 @@
+[package]
+name = "quamatic/virtua-react"
+description = "React bindings for Virtua."
+license = "MIT"
+version = "0.1.0"
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+
+[dependencies]
+Virtua = "quamatic/virtua@^0.1"
+React = "jsdotlua/react@^17"

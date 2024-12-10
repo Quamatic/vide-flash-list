@@ -2,22 +2,21 @@ local HttpService = game:GetService("HttpService")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 
-local vide = require(script.Parent.Parent.Packages.vide)
+local vide = require(script.Parent.Parent.DevPackages.vide)
 vide.strict = false
 
-local VideFlashList = require(script.Parent.Parent.Packages.VideFlashList)
-local VirtualList = VideFlashList.VirtualList
+local VirtuaVide = require(script.Parent.Parent.DevPackages.VirtuaVide)
+local VirtualList = VirtuaVide.VirtualList
 
-local ContactData = require(script.Parent.ContactData)
+local ContactData = require(script.ContactData)
 type Contact = ContactData.Contact
 
 local create = vide.create
 local source = vide.source
 
-local CONTACTS = require(script.Parent.ContactData)
 local STICKY_HEADER_INDICES = {}
 
-for index, item in CONTACTS do
+for index, item in ContactData do
 	if typeof(item) == "string" then
 		table.insert(STICKY_HEADER_INDICES, index)
 	end
@@ -149,8 +148,8 @@ end
 return {
 	vide = vide,
 	story = function()
-		local data = source(CONTACTS)
-		local handles = source(nil :: VideFlashList.VirtualListHandle?)
+		local data = source(ContactData)
+		local handles = source(nil :: VirtuaVide.VirtualizedListHandle?)
 
 		return create "Frame" {
 			AnchorPoint = Vector2.new(0.5, 0.5),
@@ -182,7 +181,7 @@ return {
 						return Contact {
 							index = index,
 							item = item :: any,
-							maxIndex = #CONTACTS,
+							maxIndex = #ContactData,
 						}
 					end,
 					ref = handles,
@@ -205,7 +204,7 @@ return {
 					onClick = function()
 						local handles = handles()
 						if handles ~= nil then
-							handles.scrollToIndex(RNG:NextInteger(1, #CONTACTS), {
+							handles.scrollToIndex(RNG:NextInteger(1, #ContactData), {
 								animator = function(update)
 									local t = 0
 									local duration = 0.8

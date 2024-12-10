@@ -1,10 +1,9 @@
 [package]
 name = "quamatic/virtua"
 description = "An easy way to create virtualized lists and grids."
-license = "MIT"
 version = "0.1.0"
+license = "MIT"
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"
 
-[dev-dependencies]
-vide = "centau/vide@^0.3"
+[dependencies]
