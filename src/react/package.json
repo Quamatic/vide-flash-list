@@ -14,6 +14,7 @@
     "@rbxts/virtua": "workspace:*"
   },
   "peerDependencies": {
-    "@rbxts/react": "*"
+    "@rbxts/react": "*",
+    "@rbxts/react-roblox": "*"
   }
 }

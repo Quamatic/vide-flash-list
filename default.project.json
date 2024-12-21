@@ -1,5 +1,5 @@
 {
-    "name": "virtua-dev",
+    "name": "virtua-test",
     "tree": {
         "$className": "DataModel",
 
@@ -15,6 +15,10 @@
 
                 "VirtuaVide": {
                     "$path": "src/vide"
+                },
+
+                "VirtuaReact": {
+                    "$path": "src/react"
                 }
             },
 

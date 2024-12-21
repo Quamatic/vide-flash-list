@@ -1,4 +1,4 @@
-local Vide = require(script.Parent.Parent.vide)
+local vide = require(script.Parent.Parent.vide)
 
 local Virtua = require(script.Parent.Parent.Virtua)
 type VirtualStore = Virtua.VirtualStore
@@ -8,25 +8,32 @@ type ListScroller = Virtua.ListScroller
 local types = require(script.Parent.types)
 type Derivable<T> = types.Derivable<T>
 
-local computed = require(script.Parent.computed)
-local isSameRange = require(script.Parent.isSameRange)
+local useRange = require(script.Parent.useRange)
 
 local VirtualStore = Virtua.VirtualStore
 local VirtualStoreSubscription = Virtua.VirtualStoreSubscription
 local ListResizer = Virtua.ListResizer
 local ListScroller = Virtua.ListScroller
 
-local source = Vide.source
-local derive = Vide.derive
-local effect = Vide.effect
-local cleanup = Vide.cleanup
+local source = vide.source
+local derive = vide.derive
+local effect = vide.effect
+local cleanup = vide.cleanup
+
+export type VirtualizerHandle = {
+	scrollTo: (offset: number) -> (),
+	scrollBy: (offset: number) -> (),
+	scrollToIndex: (index: number) -> (),
+}
 
 export type UseVirtualizerProps<T> = {
 	data: () -> { T },
 	itemSize: number,
-	overscan: number,
+	overscan: Virtua.Overscan?,
+	spacing: number?,
 	horizontal: boolean,
 	shift: boolean?,
+	--initialScrollIndex: number?,
 	onScroll: (offset: number) -> ()?,
 	onScrollEnd: () -> ()?,
 }
@@ -45,7 +52,14 @@ export type UseVirtualizerReturn<T> = {
 ]]
 local function useListVirtualizer<T>(props: UseVirtualizerProps<T>): UseVirtualizerReturn<T>
 	-- Store
-	local store = VirtualStore.new(#props.data(), props.itemSize, props.overscan, nil, false)
+	local store = VirtualStore.new({
+		elementsCount = #props.data(),
+		itemSize = props.itemSize,
+		overscan = props.overscan,
+		spacing = props.spacing,
+		shouldAutoEstimateItemSize = props.itemSize == nil or props.itemSize == 0,
+	})
+
 	local resizer = ListResizer.new(store, props.horizontal)
 	local scroller = ListScroller.new(store, props.horizontal)
 
@@ -69,17 +83,8 @@ local function useListVirtualizer<T>(props: UseVirtualizerProps<T>): UseVirtuali
 		end
 	end)
 
-	-- Computed state
-	local range = computed(function(previous)
-		rerender()
-
-		local next = store:getRange()
-		if previous and isSameRange(previous, next) then
-			return previous
-		end
-
-		return next
-	end)
+	-- State
+	local range = useRange(store, rerender)
 
 	local totalSize = derive(function()
 		rerender()

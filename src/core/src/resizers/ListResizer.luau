@@ -10,9 +10,10 @@ export type ListResizer = typeof(setmetatable(
 	{} :: {
 		_store: VirtualStore,
 		_horizontal: boolean,
-		_rootConnection: RBXScriptConnection?,
+		_viewportConnection: RBXScriptConnection?,
 		_itemConnections: { [GuiObject]: RBXScriptConnection },
 		_queuedElementUpdates: { [number]: number },
+		_queuedElementUpdatesCount: number,
 		_batching: boolean,
 		_performBatchedUpdate: () -> (),
 	},
@@ -31,7 +32,7 @@ end
 -- Public
 
 function ListResizer.observeViewport(self: ListResizer, viewport: GuiObject)
-	self._rootConnection = viewport:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+	self._viewportConnection = viewport:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
 		-- Update viewport size
 		local size = if self._horizontal then viewport.AbsoluteSize.X else viewport.AbsoluteSize.Y
 		self._store:setViewportSize(size)
@@ -47,7 +48,11 @@ function ListResizer.observeItem(self: ListResizer, index: number, element: GuiO
 
 		-- Queue update (or overwrite)
 		local size = if self._horizontal then element.AbsoluteSize.X else element.AbsoluteSize.Y
-		self._queuedElementUpdates[index] = size
+
+		if not self._queuedElementUpdates[index] then
+			self._queuedElementUpdates[index] = size
+			self._queuedElementUpdatesCount += 1
+		end
 
 		-- Prepare batch
 		self:_prepareBatchedUpdate()
@@ -68,9 +73,9 @@ function ListResizer.observeItem(self: ListResizer, index: number, element: GuiO
 end
 
 function ListResizer.dispose(self: ListResizer)
-	if self._rootConnection then
-		self._rootConnection:Disconnect()
-		self._rootConnection = nil
+	if self._viewportConnection then
+		self._viewportConnection:Disconnect()
+		self._viewportConnection = nil
 	end
 
 	for _, connection in self._itemConnections do
@@ -88,16 +93,22 @@ local function new(store: VirtualStore, horizontal: boolean): ListResizer
 		_horizontal = horizontal,
 		_itemConnections = {},
 		_queuedElementUpdates = {} :: { [number]: number },
+		_queuedElementUpdatesCount = 0,
 		_batching = false,
 	}, ListResizer)
 
 	self._performBatchedUpdate = function()
-		local resizes = {}
+		if not self._batching then
+			return
+		end
+
+		local resizes = table.create(self._queuedElementUpdatesCount)
 		for index, size in self._queuedElementUpdates do
 			table.insert(resizes, { index, size })
 		end
 
 		self._store:updateItemSizes(resizes)
+		self._queuedElementUpdatesCount = 0
 		table.clear(self._queuedElementUpdates)
 
 		self._batching = false

@@ -42,6 +42,33 @@ importers:
         specifier: ^5.7.2
         version: 5.7.2
 
+  src/core:
+    dependencies:
+      '@rbxts/fenwick-tree':
+        specifier: 1.0.0
+        version: 1.0.0
+
+  src/react:
+    dependencies:
+      '@rbxts/react':
+        specifier: '*'
+        version: 17.2.3
+      '@rbxts/react-roblox':
+        specifier: '*'
+        version: 17.2.3
+      '@rbxts/virtua':
+        specifier: workspace:*
+        version: link:../core
+
+  src/vide:
+    dependencies:
+      '@rbxts/vide':
+        specifier: '*'
+        version: 0.5.3
+      '@rbxts/virtua':
+        specifier: workspace:*
+        version: link:../core
+
 packages:
 
   '@eslint-community/eslint-utils@4.4.1':
@@ -117,8 +144,23 @@ packages:
   '@rbxts/compiler-types@3.0.0-types.0':
     resolution: {integrity: sha512-VGOHJPoL7+56NTatMGqQj3K7xWuzEV+aP4QD5vZiHu+bcff3kiTmtoadaF6NkJrmwfFAvbsd4Dg764ZjWNceag==}
 
+  '@rbxts/fenwick-tree@1.0.0':
+    resolution: {integrity: sha512-JaKUUp8PcsSx1rH3BED5m6kwxBXxcUsOLNeOmWWnbTNMU1x+0jnRZL5ne67veDbW8YyHd52N3xNPH+GsxXgAug==}
+
+  '@rbxts/react-roblox@17.2.3':
+    resolution: {integrity: sha512-YgS+C3tf92iM1NTK1f6R2O2G8+nbcKFnblA0mTs2Nt878OsWLgxhnhkCBZ6wYv+yeDGD9/sssKHZ6s2LzUWTrQ==}
+
+  '@rbxts/react-vendor@17.2.3':
+    resolution: {integrity: sha512-dWCiVelvTK6h920geaFH/OQ5zoWHyhyqyfH51hKx2/iVZ6OiiyNVJ5UqEIkJMG4HsJ8JnkTORizV3+MtQ41BtA==}
+
+  '@rbxts/react@17.2.3':
+    resolution: {integrity: sha512-IoOB8e2W8MxT0MKWFf0Ls0vT61ImYL6ctHQgz5+oazma6z8bqFtJjgPxOuy6jmMSuyfBe7rYp/muou0kIjZT+Q==}
+
   '@rbxts/types@1.0.813':
     resolution: {integrity: sha512-Qpsmqnl+TNdl5AYqKFkYHyUrv652r30qK6A3GObOyDz+cvn8i+HE61mO021oq0nu1FcA4pMHbYqLSbv2CMF9Ig==}
+
+  '@rbxts/vide@0.5.3':
+    resolution: {integrity: sha512-evaZbBRZzaqU8ibddTMaomb30pmW5OhWTT7ba1PLSA/iGBCid0eOF6BX1o0ArKPyMFnNj6pMM2yMTQzL5b9cIA==}
 
   '@roblox-ts/luau-ast@2.0.0':
     resolution: {integrity: sha512-cmMi093IdwBOLVxwuordhM8AmtbyTIyRpsTbB0D/JauidW4SXsQRQowSwWjHo4QP0DRJBXvOIlxtqEQi50uNzQ==}
@@ -879,7 +921,22 @@ snapshots:
 
   '@rbxts/compiler-types@3.0.0-types.0': {}
 
+  '@rbxts/fenwick-tree@1.0.0': {}
+
+  '@rbxts/react-roblox@17.2.3':
+    dependencies:
+      '@rbxts/react': 17.2.3
+      '@rbxts/react-vendor': 17.2.3
+
+  '@rbxts/react-vendor@17.2.3': {}
+
+  '@rbxts/react@17.2.3':
+    dependencies:
+      '@rbxts/react-vendor': 17.2.3
+
   '@rbxts/types@1.0.813': {}
+
+  '@rbxts/vide@0.5.3': {}
 
   '@roblox-ts/luau-ast@2.0.0': {}
 

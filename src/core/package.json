@@ -9,5 +9,8 @@
   "author": "quamatic",
   "repository": "quamatic/virtua",
   "license": "MIT",
-  "description": "An easy way to create virtualized lists and grids."
+  "description": "An easy way to create virtualized lists and grids.",
+  "dependencies": {
+    "@rbxts/fenwick-tree": "1.0.0"
+  }
 }

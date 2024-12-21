@@ -2,10 +2,10 @@ local HttpService = game:GetService("HttpService")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 
-local vide = require(script.Parent.Parent.DevPackages.vide)
+local vide = require(script.Parent.Parent.Parent.DevPackages.vide)
 vide.strict = false
 
-local VirtuaVide = require(script.Parent.Parent.DevPackages.VirtuaVide)
+local VirtuaVide = require(script.Parent.Parent.Parent.DevPackages.VirtuaVide)
 local VirtualList = VirtuaVide.VirtualList
 
 local ContactData = require(script.ContactData)
@@ -66,6 +66,7 @@ local function Contact(props: {
 		create "ImageLabel" {
 			Size = UDim2.fromOffset(96 - 24, 0),
 			BackgroundColor3 = Color3.fromHSV(props.index / props.maxIndex, 0.5, 0.5),
+
 			Image = function()
 				return `rbxthumb://type=AvatarHeadShot&id={props.item().userId}&w=48&h=48`
 			end,
@@ -171,7 +172,7 @@ return {
 				VirtualList {
 					data = data,
 					horizontal = false,
-					overscan = 4,
+					overscan = { type = "elements", amount = 4 },
 					itemSize = CONTACT_CARD_HEIGHT,
 					children = function(item: vide.Source<ContactData.Contact | string>, index)
 						if typeof(item()) == "string" then

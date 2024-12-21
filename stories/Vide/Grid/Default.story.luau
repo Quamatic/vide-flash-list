@@ -1,12 +1,11 @@
-local HttpService = game:GetService("HttpService")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 
-local vide = require(script.Parent.Parent.Parent.Packages.vide)
+local vide = require(script.Parent.Parent.Parent.Parent.DevPackages.vide)
 vide.strict = false
 
-local VideFlashList = require(script.Parent.Parent.Parent.Packages.VideFlashList)
-local VirtualGrid = VideFlashList.VirtualGrid
+local VirtuaVide = require(script.Parent.Parent.Parent.Parent.DevPackages.VirtuaVide)
+local VirtualGrid = VirtuaVide.VirtualGrid
 
 local create = vide.create
 local source = vide.source
@@ -39,7 +38,7 @@ return {
 	vide = vide,
 	story = function()
 		local data = source(DATA)
-		local handles = source(nil :: VideFlashList.VirtualListHandle?)
+		local handles = source(nil :: VirtuaVide.VirtualGridHandle?)
 
 		return create "Frame" {
 			AnchorPoint = Vector2.new(0.5, 0.5),
@@ -60,12 +59,11 @@ return {
 
 				VirtualGrid {
 					data = data,
-					rows = 4,
-					columns = 8,
-					width = 100,
-					height = 40,
-					overscan = 4,
-					children = function(data, row, column)
+					rows = 1,
+					columns = "auto",
+					cellWidth = 100,
+					cellHeight = 40,
+					children = function(_data, row, column)
 						return create "TextLabel" {
 							Size = UDim2.fromScale(1, 1),
 							Text = `{row}/{column}`,

@@ -1,4 +1,7 @@
 import VirtualStore from "./VirtualStore";
+import { ListScroller, GridScroller } from "./scrollers";
+import { ListResizer, GridResizer } from "./resizers";
+import { Overscan, ScrollAnimator, ScrollToIndexAlign, ListScrollToIndexConfig } from "./types";
 
 export = Virtua;
 export as namespace Virtua;
@@ -8,11 +11,11 @@ declare namespace Virtua {
 	export { VirtualStore };
 
 	// Scrollers
-	export {};
+	export { ListScroller, GridScroller };
 
 	// Resizers
-	export {};
+	export { ListResizer, GridResizer };
 
 	// Types
-	export type {};
+	export type { Overscan, ScrollAnimator, ScrollToIndexAlign, ListScrollToIndexConfig };
 }

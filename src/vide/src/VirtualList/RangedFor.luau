@@ -18,9 +18,14 @@ export type Props<T> = {
 	render: (data: () -> T, index: number) -> GuiObject,
 }
 
+-- TODO: Possibly recycle elements.
+
 local function RangedFor<T>(props: Props<T>)
+	local render = props.render
+
 	local cache: { [number]: CachedNode<T> } = {}
 
+	-- Cleanup nodes on unmount
 	cleanup(function()
 		for _, node in cache do
 			node.dispose()
@@ -31,8 +36,7 @@ local function RangedFor<T>(props: Props<T>)
 		local data = props.data()
 		local range = props.range()
 
-		local startIndex = range[1]
-		local endIndex = range[2]
+		local startIndex, endIndex = range[1], range[2]
 
 		for index, node in cache do
 			if data[index] == nil or index < startIndex or index > endIndex then
@@ -41,29 +45,35 @@ local function RangedFor<T>(props: Props<T>)
 			end
 		end
 
+		local elements = table.create(endIndex - startIndex + 1)
+
+		-- Iterate through the range
 		for i = startIndex, endIndex do
 			local value = data[i]
 			local node = cache[i]
 
 			if node == nil then
+				-- Create new node
 				local src = source(value)
-				local destroy, element = root(function()
-					return props.render(src, i)
+
+				local dispose, element = root(function()
+					return render(src, i)
 				end)
 
-				cache[i] = {
+				node = {
 					source = src,
 					previous = value,
 					element = element,
-					dispose = destroy,
+					dispose = dispose,
 				}
+
+				cache[i] = node
 			elseif node.previous ~= value then
+				-- Update previous value
+				node.previous = value
 				node.source(value)
 			end
-		end
 
-		local elements = table.create(endIndex - startIndex)
-		for _, node in cache do
 			table.insert(elements, node.element)
 		end
 
